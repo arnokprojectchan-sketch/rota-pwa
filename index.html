@@ -72,9 +72,32 @@ section{display:grid;gap:10px;min-width:0}
 .meter{height:8px;background:var(--hatch);border-radius:9px;overflow:hidden}.meter i{display:block;height:100%;background:var(--good)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{min-height:36px;padding:3px 9px;font-family:var(--num);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
-.setform{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;align-items:end}
-.setform label{font-size:12px;color:var(--muted);display:grid;gap:2px;min-width:0}
-.ex{border-left:5px solid var(--line)}.U .ex{border-left-color:var(--upper)}.L .ex{border-left-color:var(--lower)}
+.setform{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+.setform>button{grid-column:1/-1;min-height:54px;font-size:17px}
+.stepper{display:grid;gap:2px;min-width:0}
+.stepper>div{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:4px}
+.stepper input{text-align:center;font:600 24px/1 var(--num);font-variant-numeric:tabular-nums;padding:6px 2px}
+.stepper button{padding:0;font-size:20px}
+.ex{border-left:5px solid var(--line)}.U .ex,.ex.U{border-left-color:var(--upper)}.L .ex,.ex.L{border-left-color:var(--lower)}
+.ex h3{font-size:18px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;text-align:center}
+.stats>div{display:grid}.stats .num{font-size:22px}
+.exnav{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.exnav button{flex:none;white-space:nowrap;min-height:38px;font-size:13px;padding:4px 10px}
+.exnav button.full{color:var(--good)}
+.setrow{display:flex;align-items:center;gap:8px;min-height:44px;border-top:1px solid var(--line);padding-top:6px;flex-wrap:wrap}
+.setrow .big{font-size:21px}
+.setrow.later{color:var(--muted);font-size:14px}
+.setrow.warm{border:1px dashed var(--line);border-radius:6px;padding:6px 8px}
+.why{font-size:14px;border-left:3px solid var(--good);padding-left:8px}
+.prhint{font-size:14px;font-weight:700;color:var(--warn)}
+.mini svg{width:100%;height:auto;display:block}
+details>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--muted)}
+.cfg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cfg label{font-size:12px;color:var(--muted);display:grid;gap:2px;min-width:0}
+.cfg label.check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.cfg label.check input{width:22px;height:22px;min-height:0}
+.cfg button{grid-column:1/-1}
 .empty{border:1px dashed var(--line);border-radius:8px;padding:14px;color:var(--muted)}
 .note{font-size:13px;color:var(--warn)}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);z-index:5;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -102,7 +125,16 @@ const WORK=new Set([0,1,4,5,6,10,11]);
 const TRAIN={1:'U',2:'L',3:'U',6:'L',7:'U',8:'L',12:'U',13:'L'};
 const TNAME={U:'上肢',L:'下肢',N:'休息'};
 const WD=['日','一','二','三','四','五','六'];
-const DEFAULT_T={U:['上斜啞鈴臥推','坐姿划船','肩推','滑輪下拉','二頭彎舉','三頭下壓'],L:['深蹲','羅馬尼亞硬拉','分腿蹲','腿彎舉','提踵','平板支撐（秒）']};
+const DEFAULT_T={U:['上斜啞鈴臥推','胸托啞鈴划船','坐姿啞鈴肩推','單臂啞鈴划船','啞鈴二頭彎舉','啞鈴過頭三頭伸展'],L:['高腳杯深蹲','啞鈴羅馬尼亞硬拉','保加利亞分腿蹲','啞鈴臀橋','單腳提踵','平板支撐（秒）']};
+/* Natsu's adjustable dumbbell steps (kg per dumbbell); editable in 訓練 → 我的啞鈴 */
+const DB_DEFAULT=[2.5,3.5,4.5,5.5,6.5,8,9,10,11.5,13.5,16,18,20.5,22.5,24];
+const EX_DEF={
+  '上斜啞鈴臥推':{sets:3,lo:8,hi:12,rest:90},'胸托啞鈴划船':{sets:3,lo:8,hi:12,rest:90},'坐姿啞鈴肩推':{sets:3,lo:8,hi:12,rest:90},
+  '單臂啞鈴划船':{sets:3,lo:8,hi:12,rest:75,uni:true},'啞鈴二頭彎舉':{sets:3,lo:10,hi:15,rest:60},'啞鈴過頭三頭伸展':{sets:3,lo:10,hi:15,rest:60},
+  '高腳杯深蹲':{sets:4,lo:8,hi:12,rest:90},'啞鈴羅馬尼亞硬拉':{sets:3,lo:8,hi:12,rest:90},'保加利亞分腿蹲':{sets:3,lo:8,hi:12,rest:75,uni:true},
+  '啞鈴臀橋':{sets:3,lo:10,hi:15,rest:60},'單腳提踵':{sets:3,lo:12,hi:20,rest:45,uni:true},'平板支撐（秒）':{sets:3,lo:30,hi:60,rest:60,track:'time'}};
+const TRACK={kg:'重量 × 次數',reps:'只計次數',time:'計時（秒）'};
+const ls={get:(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 const COLLS=['sessions','tasks','projects','overrides','config'];
 const S={sessions:{},tasks:{},projects:{},overrides:{},config:{}};
 const ui={tab:'today',month:null,sel:null,trainDate:null,exercise:null,confirm:null,taskWhen:'none',loaded:false,mode:'connecting'};
@@ -247,43 +279,119 @@ function viewCalendar(){
   <div class="row">${p.train!=='N'&&!isDone(sel)?`<button class="primary grow" data-act="gotrain" data-d="${sel}">開始訓練</button><button data-act="postpone" data-d="${sel}">改期</button>`:''}${p.changed?`<button class="quiet" data-act="reset" data-d="${sel}">還原${b.shift?'循環':''}設定</button>`:''}</div></section>`;
 }
 
+/* training
+   Progression rule (our own, written to be readable): double progression on Natsu's dumbbell steps.
+   - every planned set at the top weight reached the top of the rep range -> next dumbbell up, start again at the bottom of the range
+   - a set fell short of the bottom of the range -> stay; two sessions in a row short at the same weight -> one step down
+   - otherwise stay and aim one more rep per set
+   Time / reps-only exercises: beat last time's best by 5 s / 1 rep. */
+const dumbbells=()=>((S.config.gear&&S.config.gear.dumbbells)||DB_DEFAULT).slice().sort((a,b)=>a-b);
+function exCfg(n){return Object.assign({sets:3,lo:8,hi:12,rest:90,track:/（秒）|\(秒\)/.test(n)?'time':'kg',uni:false,warm:true,goal:null},EX_DEF[n]||{},((S.config.exercises||{})[n])||{})}
+const unit=c=>c.track==='time'?' 秒':' 下';
+function stepKg(v,dir){const l=dumbbells();if(!(v>0))return l[0];if(dir>0){const n=l.find(x=>x>v+1e-9);return n===undefined?v:n}const p=l.filter(x=>x<v-1e-9).pop();return p===undefined?v:p}
+const nextUp=w=>{const n=dumbbells().find(x=>x>w+1e-9);return n===undefined?null:n};
 function lastFor(name,before){return Object.values(S.sessions).filter(s=>s.date<before).sort((a,b)=>a.date<b.date?1:-1).map(s=>({date:s.date,ex:(s.exercises||[]).find(e=>e.name===name)})).find(x=>x.ex&&x.ex.sets&&x.ex.sets.length)}
-const setsText=sets=>sets.map(s=>`${s.kg}×${s.reps}`).join('、');
-function exHistory(name){return Object.values(S.sessions).sort((a,b)=>a.date<b.date?-1:1).map(s=>{const e=(s.exercises||[]).find(x=>x.name===name);return e&&e.sets&&e.sets.length?{date:s.date,kg:Math.max(...e.sets.map(z=>z.kg))}:null}).filter(Boolean)}
-function chart(name){const h=exHistory(name);if(!h.length)return '<p class="empty">這個動作還沒有紀錄。</p>';
-  const W=320,H=130,L=34,R=12,T=14,B=24,ks=h.map(x=>x.kg),mn=Math.min(...ks),mx=Math.max(...ks),span=mx-mn||1;
+function suggest(n,before){const c=exCfg(n),prev=lastFor(n,before);
+  if(!prev)return c.track==='kg'?{kg:null,reps:c.lo,why:`第一次做：揀一個做到 ${c.lo}–${c.hi} 下、最後仲有 1–2 下餘力嘅重量。`}:{kg:0,reps:c.lo,why:`第一次做：目標每組 ${c.lo}${unit(c)}。`};
+  const sets=prev.ex.sets;
+  if(c.track!=='kg'){const best=Math.max(...sets.map(z=>z.reps)),t=best+(c.track==='time'?5:1);return{kg:0,reps:t,why:`上次最好 ${best}${unit(c)}，今次試 ${t}${unit(c)}。`}}
+  const W=Math.max(...sets.map(z=>z.kg)),atW=sets.filter(z=>z.kg===W);
+  if(atW.length>=c.sets&&atW.every(z=>z.reps>=c.hi)){const nx=nextUp(W);
+    if(nx===null)return{kg:W,reps:c.hi,why:`上次 ${W} kg 每組都做到 ${c.hi} 下，已經冇再重嘅啞鈴：每組試多 1–2 下，或者加一組。`};
+    return{kg:nx,reps:c.lo,why:`上次 ${W} kg 每組都做到 ${c.hi} 下，所以加到 ${nx} kg，由 ${c.lo} 下開始。`}}
+  if(atW.some(z=>z.reps<c.lo)){const p2=lastFor(n,prev.date);
+    const short2=p2&&Math.max(...p2.ex.sets.map(z=>z.kg))===W&&p2.ex.sets.filter(z=>z.kg===W).some(z=>z.reps<c.lo);
+    if(short2){const dn=stepKg(W,-1);return{kg:dn,reps:c.lo,why:`連續兩次 ${W} kg 有組做唔夠 ${c.lo} 下，所以減到 ${dn} kg。`}}
+    return{kg:W,reps:c.lo,why:`上次 ${W} kg 有組做唔夠 ${c.lo} 下，今次保持 ${W} kg。`}}
+  const t=Math.min(c.hi,Math.min(...atW.map(z=>z.reps))+1);
+  return{kg:W,reps:t,why:`保持 ${W} kg，每組目標 ${t} 下。全部組都做到 ${c.hi} 下，下次就會加重。`}}
+const e1rm=z=>z.kg>0?z.kg*(1+z.reps/30):0;
+function bestBefore(n,before){let kg=0,e1=0;Object.values(S.sessions).forEach(s=>{if(s.date>=before)return;(s.exercises||[]).forEach(e=>{if(e.name!==n)return;e.sets.forEach(z=>{if(z.kg>kg)kg=z.kg;e1=Math.max(e1,e1rm(z))})})});return{kg,e1}}
+function prOf(n,d,sets,k){const b=bestBefore(n,d);if(!(b.kg>0))return '';let kg=b.kg,e1=b.e1;for(let j=0;j<k;j++){kg=Math.max(kg,sets[j].kg);e1=Math.max(e1,e1rm(sets[j]))}
+  const z=sets[k];return z.kg>kg?'最重紀錄':e1rm(z)>e1+.01?'估計 1RM 新高':''}
+function goalFor(n){const c=exCfg(n);if(c.goal>0)return c.goal;const m=bestBefore(n,'9999').kg;if(!(m>0))return null;const l=dumbbells(),g=l.find(x=>x>=m+5)||l[l.length-1];return g>m?g:null}
+const fmtSet=(z,c)=>c.track==='kg'?`${z.kg} kg × ${z.reps}`:`${z.reps}${unit(c)}`;
+const setsText=sets=>sets.map(s=>s.kg>0?`${s.kg}×${s.reps}`:`${s.reps}`).join('、');
+const dur=ms=>{const t=Math.max(0,Math.floor(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t/60)%60,s=t%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')};
+function stats(s){let vol=0,reps=0,sets=0,exs=0;(s.exercises||[]).forEach(e=>{const c=exCfg(e.name);if(e.sets.length)exs++;e.sets.forEach(z=>{sets++;if(c.track!=='time')reps+=z.reps;vol+=(z.kg||0)*z.reps})});return{vol,reps,sets,exs}}
+function exHistory(name){return Object.values(S.sessions).sort((a,b)=>a.date<b.date?-1:1).map(s=>{const e=(s.exercises||[]).find(x=>x.name===name);return e&&e.sets&&e.sets.length?{date:s.date,kg:Math.max(...e.sets.map(z=>z.kg||0))}:null}).filter(x=>x&&x.kg>0)}
+function chart(name,goal){const h=exHistory(name);if(!h.length)return '<p class="empty">這個動作還沒有重量紀錄。</p>';
+  const W=320,H=130,L=34,R=12,T=14,B=24,ks=h.map(x=>x.kg).concat(goal>0?[goal]:[]),mn=Math.min(...ks),mx=Math.max(...ks),span=mx-mn||1;
   const X=i=>h.length===1?(L+W-R)/2:L+i*(W-L-R)/(h.length-1),Y=k=>T+(mx-k)/span*(H-T-B);
   const pts=h.map((x,i)=>`${X(i).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(' ');const e=h[h.length-1];
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(name)}最高重量，最新 ${e.kg} 公斤">
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(name)}最高重量，最新 ${e.kg} 公斤${goal>0?'，目標 '+goal+' 公斤':''}">
   <line x1="${L}" x2="${W-R}" y1="${Y(mx)}" y2="${Y(mx)}" stroke="var(--line)"/><line x1="${L}" x2="${W-R}" y1="${Y(mn)}" y2="${Y(mn)}" stroke="var(--line)"/>
   <text x="${L-5}" y="${Y(mx)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${mx}</text>${mx!==mn?`<text x="${L-5}" y="${Y(mn)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${mn}</text>`:''}
+  ${goal>0?`<line x1="${L}" x2="${W-R}" y1="${Y(goal)}" y2="${Y(goal)}" stroke="var(--warn)" stroke-dasharray="5 4"/><text x="${W-R}" y="${Y(goal)-4}" text-anchor="end" font-size="12" fill="var(--warn)">目標 ${goal}</text>`:''}
   <polyline points="${pts}" fill="none" stroke="var(--upper)" stroke-width="2"/><circle cx="${X(h.length-1)}" cy="${Y(e.kg)}" r="4" fill="var(--upper)"/>
   <text x="${L}" y="${H-6}" font-size="12" fill="var(--muted)">${short(h[0].date)}</text><text x="${W-R}" y="${H-6}" text-anchor="end" font-size="12" fill="var(--muted)">${short(e.date)}</text></svg>`}
+const sugText=(sg,c)=>c.track==='kg'?(sg.kg>0?`${sg.kg} kg × ${c.lo}–${c.hi}`:`${c.lo}–${c.hi} 下，重量自己揀`):`${sg.reps}${unit(c)}`;
+
+function viewTrainStart(d,p){
+  const t=ui.pickT&&ui.pickFor===d?ui.pickT:(p.train!=='N'?p.train:'U'),list=templates()[t];
+  const seg=(v,l)=>`<button class="${t===v?'on':''} grow" data-act="pickt" data-t="${v}" data-d="${d}">${l}</button>`;
+  return `<section class="panel"><div class="head"><h2>${short(d)}（${WD[wd(d)]}）</h2><div>${pills(d,p)}</div></div>
+  ${p.train==='N'?'<p class="muted small">今日沒有排訓練，你也可以補練。</p>':''}
+  <div class="row">${seg('U','上肢')}${seg('L','下肢')}</div>
+  <div class="list">${list.map(n=>{const c=exCfg(n),sg=suggest(n,d);return `<div class="item"><span class="grow">${esc(n)}</span><span class="small muted num">${c.sets} 組 · ${esc(sugText(sg,c))}</span></div>`}).join('')}</div>
+  <button class="primary" data-act="start" data-t="${t}" data-d="${d}">開始${TNAME[t]}訓練</button></section>
+  <details class="panel"><summary>我的啞鈴重量</summary><form class="row" data-form="gear"><input class="grow" name="list" inputmode="decimal" value="${dumbbells().join(', ')}" aria-label="啞鈴重量，用逗號分隔"><button type="submit">儲存</button></form>
+  <p class="small muted">建議重量只會用呢度有嘅重量。每個數字係一隻啞鈴嘅重量。</p></details>`}
+
+function viewFocus(d,s){
+  const n=s.exercises.length;
+  const addForm=`<form class="row" data-form="addex" data-d="${d}"><input class="grow" id="newex" name="name" placeholder="加入動作，例如：啞鈴側平舉" aria-label="加入動作"><button type="submit">加入</button></form>`;
+  const finish=`<button class="${n&&s.exercises.every(e=>e.sets.length>=exCfg(e.name).sets)?'primary':''}" data-act="finish" data-d="${d}">完成訓練</button>`;
+  if(!n)return `<h2>${short(d)} ${TNAME[s.type]}</h2><p class="empty">未有動作，喺下面加入。</p>${addForm}${finish}`;
+  let i=ui.curFor===d&&ui.cur>=0&&ui.cur<n?ui.cur:s.exercises.findIndex(e=>e.sets.length<exCfg(e.name).sets);if(i<0)i=n-1;ui.cur=i;ui.curFor=d;
+  const e=s.exercises[i],c=exCfg(e.name),sg=suggest(e.name,d),prev=lastFor(e.name,d),st=stats(s),k=e.sets.length,best=bestBefore(e.name,d),goal=c.track==='kg'?goalFor(e.name):null;
+  const dr=ui.draft&&ui.draft.d===d&&ui.draft.i===i&&ui.draft.k===k?ui.draft:null;
+  const kg=dr?dr.kg:(k?e.sets[k-1].kg:sg.kg),reps=dr?dr.reps:sg.reps;
+  const sessMax=Math.max(0,...e.sets.map(z=>z.kg));
+  const prHint=c.track==='kg'&&best.kg>0&&kg>best.kg&&kg>sessMax?`<p class="prhint">做到 ${kg} kg 就係呢個動作嘅新紀錄</p>`:'';
+  const warmKg=sg.kg>0?dumbbells().reduce((a,x)=>Math.abs(x-sg.kg/2)<Math.abs(a-sg.kg/2)?x:a):null;
+  const nav=s.exercises.map((x,j)=>{const cj=exCfg(x.name),full=x.sets.length>=cj.sets;return `<button class="${j===i?'on':''} ${full?'full':''}" data-act="goex" data-i="${j}" aria-label="${esc(x.name)}，已做 ${x.sets.length} / ${cj.sets} 組">${full?'✓ ':''}${esc(x.name)} <span class="num">${x.sets.length}/${cj.sets}</span></button>`}).join('');
+  const kgField=c.track==='kg'?`<div class="stepper"><span class="small muted">公斤（一隻）</span><div><button type="button" data-act="step" data-f="kg" data-dir="-1" aria-label="輕一級">−</button><input name="kg" inputmode="decimal" value="${kg??''}" autocomplete="off" aria-label="公斤"><button type="button" data-act="step" data-f="kg" data-dir="1" aria-label="重一級">＋</button></div></div>`:'<input type="hidden" name="kg" value="0">';
+  const repField=`<div class="stepper"><span class="small muted">${c.track==='time'?'秒':c.uni?'次數（一邊）':'次數'}</span><div><button type="button" data-act="step" data-f="reps" data-dir="-1" aria-label="減少">−</button><input name="reps" inputmode="numeric" value="${reps??''}" autocomplete="off" aria-label="${c.track==='time'?'秒數':'次數'}"><button type="button" data-act="step" data-f="reps" data-dir="1" aria-label="增加">＋</button></div></div>`;
+  const upcoming=[];for(let j=k+1;j<c.sets;j++)upcoming.push(`<div class="setrow later"><span class="num">第 ${j+1} 組</span><span class="small">${esc(sugText(sg,c))}</span></div>`);
+  const nextBtn=k>=c.sets?(i<n-1?`<button class="primary" data-act="goex" data-i="${i+1}">下一個動作：${esc(s.exercises[i+1].name)}</button>`:''):'';
+  return `<div class="head"><h2>${short(d)} ${TNAME[s.type]}</h2><span class="small muted">動作 ${i+1} / ${n}</span></div>
+  <div class="stats panel"><div><span class="small muted">時間</span><span class="num" data-elapsed="${esc(s.startedAt||'')}">${dur(Date.now()-Date.parse(s.startedAt||Date()))}</span></div><div><span class="small muted">總重量</span><span class="num">${Math.round(st.vol).toLocaleString()} kg</span></div><div><span class="small muted">組數</span><span class="num">${st.sets}</span></div></div>
+  <div class="exnav">${nav}</div>
+  <article class="panel ex ${s.type}"><div class="head"><h3>${esc(e.name)}</h3><span class="small muted num">${c.sets} 組 · ${c.track==='kg'?c.lo+'–'+c.hi+' 下':c.lo+'–'+c.hi+unit(c)} · 休息 ${c.rest} 秒</span></div>
+  ${c.uni?'<p class="small muted">重量係一隻啞鈴，次數係一邊。</p>':''}
+  <p class="small muted">${prev?`上次 ${short(prev.date)}：<span class="num">${setsText(prev.ex.sets)}</span>`:'第一次做'}</p>
+  <p class="why">${esc(sg.why)}</p>
+  ${c.track==='kg'&&best.kg>0?`<div class="mini"><p class="small muted">最高 <span class="num">${best.kg} kg</span>${goal?` · 目標 <span class="num">${goal} kg</span>`:''}</p>${chart(e.name,goal)}</div>`:''}
+  ${c.warm&&c.track==='kg'&&!k&&!e.warm?`<div class="setrow warm"><span class="grow">熱身：${warmKg?warmKg+' kg 左右，':'輕重量，'}輕鬆做 5 下</span><button data-act="warm" data-i="${i}" data-d="${d}">做咗</button><button class="quiet" data-act="warm" data-i="${i}" data-d="${d}">略過</button></div>`:''}
+  ${e.sets.map((z,j)=>{const pr=c.track==='kg'?prOf(e.name,d,e.sets,j):'';return `<div class="setrow done"><span class="num">第 ${j+1} 組</span><span class="num big grow">${fmtSet(z,c)}</span>${pr?`<span class="pill good">${pr}</span>`:''}<button class="quiet small" data-act="rmset" data-i="${i}" data-k="${j}" data-d="${d}" aria-label="刪除第 ${j+1} 組，重新做">刪除</button></div>`}).join('')}
+  ${prHint}
+  <form class="setform" data-form="set" data-i="${i}" data-d="${d}" data-track="${c.track}">${kgField}${repField}<button class="${k>=c.sets?'':'primary'}" type="submit">${k>=c.sets?'加多一組':'完成第 '+(k+1)+' 組'}</button></form>
+  ${upcoming.join('')}${nextBtn}
+  <div class="row"><button class="grow" data-act="goex" data-i="${i-1}" ${i?'':'disabled'}>上一個</button><button class="grow" data-act="goex" data-i="${i+1}" ${i<n-1?'':'disabled'}>下一個</button></div>
+  <details><summary class="small">設定呢個動作</summary><form class="cfg" data-form="excfg" data-n="${esc(e.name)}">
+  <label>組數<input name="sets" inputmode="numeric" value="${c.sets}"></label><label>次數／秒（最少）<input name="lo" inputmode="numeric" value="${c.lo}"></label><label>次數／秒（最多）<input name="hi" inputmode="numeric" value="${c.hi}"></label><label>休息（秒）<input name="rest" inputmode="numeric" value="${c.rest}"></label>
+  <label>類型<select name="track">${Object.keys(TRACK).map(t=>`<option value="${t}" ${c.track===t?'selected':''}>${TRACK[t]}</option>`).join('')}</select></label><label>目標 kg（留空 = 自動）<input name="goal" inputmode="decimal" value="${exCfg(e.name).goal||''}"></label>
+  <label class="check"><input type="checkbox" name="uni" ${c.uni?'checked':''}> 單邊動作</label><label class="check"><input type="checkbox" name="warm" ${c.warm?'checked':''}> 熱身組</label>
+  <button type="submit">儲存設定</button>${!k?`<button type="button" class="quiet" data-act="rmex" data-i="${i}" data-d="${d}">喺今次同範本移除呢個動作</button>`:''}</form></details></article>
+  ${addForm}${finish}`}
+
+function viewSummary(d,s){const st=stats(s),ms=s.finishedAt&&s.startedAt?Date.parse(s.finishedAt)-Date.parse(s.startedAt):0;
+  const prs=[];(s.exercises||[]).forEach(e=>{const c=exCfg(e.name);if(c.track!=='kg')return;e.sets.forEach((z,k)=>{const p=prOf(e.name,d,e.sets,k);if(p)prs.push(`${esc(e.name)} ${z.kg} kg × ${z.reps}（${p}）`)})});
+  return `<section class="panel"><div class="head"><h2>${short(d)} ${TNAME[s.type]} 完成</h2><button class="quiet" data-act="reopen" data-d="${d}">繼續編輯</button></div>
+  <div class="stats"><div><span class="small muted">動作</span><span class="num">${st.exs}</span></div><div><span class="small muted">總重量</span><span class="num">${Math.round(st.vol).toLocaleString()} kg</span></div><div><span class="small muted">時間</span><span class="num">${ms>0?dur(ms):'—'}</span></div></div>
+  ${prs.length?`<div><p class="small muted">新紀錄</p>${prs.map(x=>`<p>${x}</p>`).join('')}</div>`:''}
+  <div class="list">${s.exercises.filter(e=>e.sets.length).map(e=>`<div class="item"><span class="grow">${esc(e.name)}</span><span class="small muted num">${setsText(e.sets)}</span></div>`).join('')}</div></section>`}
 
 function viewTrain(){
   const d=ui.trainDate||today(),p=plan(d),s=S.sessions[d];
-  let main='';
-  if(!s){
-    main=`<section class="panel"><div class="head"><h2>${short(d)}（${WD[wd(d)]}）</h2><div>${pills(d,p)}</div></div>
-    <p class="muted small">${p.train==='N'?'今日沒有排訓練，你也可以補練。':'按「開始」後，動作清單會載入，每組輸入重量和次數。'}</p>
-    <div class="row"><button class="${p.train==='U'?'primary':''} grow" data-act="start" data-t="U" data-d="${d}">開始上肢</button><button class="${p.train==='L'?'primary':''} grow" data-act="start" data-t="L" data-d="${d}">開始下肢</button></div></section>`;
-  }else{
-    main=`<div class="head"><h2>${short(d)} ${TNAME[s.type]}${s.done?'（已完成）':''}</h2>${s.done?`<button class="quiet" data-act="reopen" data-d="${d}">繼續編輯</button>`:''}</div>
-    <div class="${s.type}" style="display:grid;gap:10px">${s.exercises.map((e,i)=>{
-      const prev=lastFor(e.name,d);const seed=e.sets.length?e.sets[e.sets.length-1]:(prev?prev.ex.sets[prev.ex.sets.length-1]:{});
-      return `<article class="panel ex"><div class="head"><h3 style="font-size:16px">${esc(e.name)}</h3>${!s.done&&!e.sets.length?`<button class="quiet small" data-act="rmex" data-i="${i}" data-d="${d}">移除</button>`:''}</div>
-      <p class="small muted">${prev?`上次 ${short(prev.date)}：<span class="num">${setsText(prev.ex.sets)}</span>`:'第一次記錄'}</p>
-      ${e.sets.length?`<div class="chips">${e.sets.map((z,k)=>`<button class="chip" ${s.done?'disabled':''} data-act="rmset" data-i="${i}" data-k="${k}" data-d="${d}" aria-label="刪除第 ${k+1} 組">${z.kg}×${z.reps}</button>`).join('')}</div>`:''}
-      ${s.done?'':`<form class="setform" data-form="set" data-i="${i}" data-d="${d}"><label>公斤<input id="kg-${i}" name="kg" inputmode="decimal" value="${seed.kg??''}" autocomplete="off"></label><label>次數<input id="rp-${i}" name="reps" inputmode="numeric" value="${seed.reps??''}" autocomplete="off"></label><button class="primary" type="submit">記一組</button></form>`}</article>`}).join('')}</div>
-    ${s.done?'':`<form class="row" data-form="addex" data-d="${d}"><input class="grow" id="newex" name="name" placeholder="加入動作，例如：側平舉" aria-label="加入動作"><button type="submit">加入</button></form>
-    <button class="primary" data-act="finish" data-d="${d}">完成訓練</button>`}`;
-  }
-  const names=[...new Set([...templates().U,...templates().L,...Object.values(S.sessions).flatMap(x=>(x.exercises||[]).map(e=>e.name))])];
+  const main=!s?viewTrainStart(d,p):s.done?viewSummary(d,s):viewFocus(d,s);
+  const names=[...new Set([...templates().U,...templates().L,...Object.values(S.sessions).flatMap(x=>(x.exercises||[]).map(e=>e.name))])].filter(n=>exCfg(n).track==='kg');
   const ex=ui.exercise&&names.includes(ui.exercise)?ui.exercise:names[0];
   const hist=Object.values(S.sessions).filter(x=>x.done).sort((a,b)=>a.date<b.date?1:-1).slice(0,12);
   return `<header><h1>訓練</h1></header>${main}
-  <section><div class="head"><h2>最高重量</h2><span class="small muted">公斤</span></div><select id="exsel" data-change="exercise" aria-label="選擇動作">${names.map(n=>`<option ${n===ex?'selected':''}>${esc(n)}</option>`).join('')}</select><div id="chart">${chart(ex)}</div></section>
-  <section><h2>紀錄</h2>${hist.length?`<div class="panel list">${hist.map(x=>{const vol=(x.exercises||[]).reduce((a,e)=>a+e.sets.reduce((b,z)=>b+z.kg*z.reps,0),0),n=(x.exercises||[]).reduce((a,e)=>a+e.sets.length,0);return `<div class="item"><button class="quiet grow" style="text-align:left;color:var(--ink)" data-act="opensession" data-d="${x.date}"><span class="num">${short(x.date)}</span> ${TNAME[x.type]}</button><span class="small muted num">${n} 組 · ${Math.round(vol).toLocaleString()} kg</span></div>`}).join('')}</div>`:'<p class="empty">完成第一次訓練後，紀錄會出現在這裡。</p>'}</section>`;
+  <section><div class="head"><h2>最高重量</h2><span class="small muted">公斤</span></div><select id="exsel" data-change="exercise" aria-label="選擇動作">${names.map(n=>`<option ${n===ex?'selected':''}>${esc(n)}</option>`).join('')}</select><div id="chart">${chart(ex,goalFor(ex))}</div></section>
+  <section><h2>紀錄</h2>${hist.length?`<div class="panel list">${hist.map(x=>{const st=stats(x);return `<div class="item"><button class="quiet grow" style="text-align:left;color:var(--ink)" data-act="opensession" data-d="${x.date}"><span class="num">${short(x.date)}</span> ${TNAME[x.type]}</button><span class="small muted num">${st.sets} 組 · ${Math.round(st.vol).toLocaleString()} kg</span></div>`}).join('')}</div>`:'<p class="empty">完成第一次訓練後，紀錄會出現在這裡。</p>'}</section>`;
 }
 
 function viewTasks(){
@@ -337,10 +445,14 @@ function go(t){ui.tab=t;ui.confirm=null;render();scrollTo(0,0);try{history.repla
 
 /* rest timer */
 const rest={end:0,iv:null};const restEl=document.getElementById('rest');
+/* the end time is stored, so if iOS freezes or closes the app the countdown is still right when it comes back */
 function tickRest(){const left=Math.ceil((rest.end-Date.now())/1000);
-  if(left<=0){restEl.innerHTML='<span class="num" style="color:var(--good)">休息結束</span><button data-act="reststop">關閉</button>';clearInterval(rest.iv);rest.iv=null;beep();return}
-  restEl.innerHTML=`<span class="num">休息 ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span><button data-act="rest30">+30 秒</button><button data-act="reststop">略過</button>`}
-function startRest(sec){rest.end=Date.now()+sec*1000;restEl.hidden=false;if(!rest.iv)rest.iv=setInterval(tickRest,1000);tickRest()}
+  if(left<=0){restEl.innerHTML='<span class="num" style="color:var(--good)">休息結束</span><button data-act="reststop">關閉</button>';clearInterval(rest.iv);rest.iv=null;ls.del('rota-rest');if(left>-5)beep();return}
+  restEl.innerHTML=`<span class="num">休息 ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span><button data-act="restadj" data-s="-15" aria-label="少 15 秒">−15</button><button data-act="restadj" data-s="15" aria-label="多 15 秒">+15</button><button data-act="reststop">略過</button>`}
+function startRest(sec,end){rest.end=end||Date.now()+sec*1000;ls.set('rota-rest',rest.end);restEl.hidden=false;if(!rest.iv)rest.iv=setInterval(tickRest,1000);tickRest()}
+function stopRest(){restEl.hidden=true;clearInterval(rest.iv);rest.iv=null;ls.del('rota-rest')}
+{const r=ls.get('rota-rest',0);if(r>Date.now())startRest(0,r)}
+setInterval(()=>document.querySelectorAll('[data-elapsed]').forEach(el=>{const t=Date.parse(el.dataset.elapsed);if(t)el.textContent=dur(Date.now()-t)}),1000);
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.frequency.value=880;g.gain.value=.15;o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+.35)}catch(e){}}
 
 function postpone(d){const p=plan(d);for(let i=1;i<=14;i++){const x=add(d,i);if(plan(x).train==='N'&&!isDone(x)){
@@ -358,30 +470,43 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
   else if(act==='reset')del('overrides',a.d);
   else if(act==='postpone')postpone(a.d);
   else if(act==='gotrain'){ui.trainDate=a.d;const p=plan(a.d);if(!S.sessions[a.d]&&p.train!=='N')startSession(a.d,p.train);go('train')}
-  else if(act==='start')startSession(a.d,a.t);
-  else if(act==='finish'){const s=clone(S.sessions[a.d]);s.done=true;s.finishedAt=new Date().toISOString();put('sessions',a.d,s);restEl.hidden=true;clearInterval(rest.iv);rest.iv=null}
-  else if(act==='reopen'){const s=clone(S.sessions[a.d]);s.done=false;put('sessions',a.d,s)}
-  else if(act==='opensession'){ui.trainDate=a.d;render();scrollTo(0,0)}
-  else if(act==='rmset'){const s=clone(S.sessions[a.d]);s.exercises[a.i].sets.splice(a.k,1);put('sessions',a.d,s)}
-  else if(act==='rmex'){const s=clone(S.sessions[a.d]);const n=s.exercises[a.i].name;s.exercises.splice(a.i,1);put('sessions',a.d,s);const t=clone(templates());t[s.type]=t[s.type].filter(x=>x!==n);put('config','main',{templates:t})}
-  else if(act==='rest30'){rest.end+=30000;tickRest()}
-  else if(act==='reststop'){restEl.hidden=true;clearInterval(rest.iv);rest.iv=null}
+  else if(act==='start'){ui.cur=0;ui.curFor=a.d;startSession(a.d,a.t);scrollTo(0,0)}
+  else if(act==='pickt'){ui.pickT=a.t;ui.pickFor=a.d;render()}
+  else if(act==='goex'){const i=+a.i;if(i>=0){ui.cur=i;ui.curFor=ui.trainDate||today();ui.draft=null;render();scrollTo(0,0)}}
+  else if(act==='step'){const f=b.closest('form'),inp=f.elements[a.f],dir=+a.dir;
+    if(a.f==='kg')inp.value=stepKg(parseFloat(inp.value),dir);else{const v=parseInt(inp.value,10)||0;inp.value=Math.max(1,v+dir*(f.dataset.track==='time'?5:1))}
+    keepDraft(f)}
+  else if(act==='warm'){const s=clone(S.sessions[a.d]);s.exercises[a.i].warm=true;put('sessions',a.d,s)}
+  else if(act==='finish'){const s=clone(S.sessions[a.d]);s.done=true;s.finishedAt=new Date().toISOString();put('sessions',a.d,s);stopRest();scrollTo(0,0)}
+  else if(act==='reopen'){const s=clone(S.sessions[a.d]);s.done=false;delete s.finishedAt;put('sessions',a.d,s)}
+  else if(act==='opensession'){ui.trainDate=a.d;ui.cur=-1;render();scrollTo(0,0)}
+  else if(act==='rmset'){const s=clone(S.sessions[a.d]);s.exercises[a.i].sets.splice(a.k,1);ui.draft=null;put('sessions',a.d,s)}
+  else if(act==='rmex'){const s=clone(S.sessions[a.d]);const n=s.exercises[a.i].name;s.exercises.splice(a.i,1);ui.cur=Math.max(0,a.i-1);put('sessions',a.d,s);const t=clone(templates());t[s.type]=t[s.type].filter(x=>x!==n);put('config','main',Object.assign({},S.config.main,{templates:t}))}
+  else if(act==='restadj'){rest.end+=(+a.s)*1000;ls.set('rota-rest',rest.end);tickRest()}
+  else if(act==='reststop')stopRest();
   else if(act==='when'){ui.taskWhen=a.v;const tx=document.getElementById('tasktext');const v=tx?tx.value:'';render();const n=document.getElementById('tasktext');if(n)n.value=v}
   else if(act==='deltask')del('tasks',a.id);
   else if(act==='delmile'){const p=clone(S.projects[a.p]);p.milestones=p.milestones.filter(m=>m.id!==a.m);put('projects',a.p,p)}
   else if(act==='delproj'){if(ui.confirm===a.p){ui.confirm=null;del('projects',a.p)}else{ui.confirm=a.p;render()}}
 });
+/* keep what is typed in the set form across re-renders (a background sync redraws the page) */
+function keepDraft(f){if(!f||f.dataset.form!=='set')return;const s=S.sessions[f.dataset.d];ui.draft={d:f.dataset.d,i:+f.dataset.i,k:s?s.exercises[f.dataset.i].sets.length:0,kg:f.elements.kg.value,reps:f.elements.reps.value}}
+document.addEventListener('input',e=>keepDraft(e.target.form));
 document.addEventListener('change',e=>{const t=e.target,a=t.dataset;
   if(a.act==='task'){const x=clone(S.tasks[a.id]);x.done=t.checked;put('tasks',a.id,x)}
   else if(a.act==='mile'){const p=clone(S.projects[a.p]);p.milestones.find(m=>m.id===a.m).done=t.checked;put('projects',a.p,p)}
-  else if(a.change==='exercise'){ui.exercise=t.value;document.getElementById('chart').innerHTML=chart(t.value)}
+  else if(a.change==='exercise'){ui.exercise=t.value;document.getElementById('chart').innerHTML=chart(t.value,goalFor(t.value))}
 });
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,a=f.dataset,fd=new FormData(f);
   if(a.form==='login'){ui.loggingIn=true;ui.loginError=null;const email=String(fd.get('email')).trim(),password=String(fd.get('password'));render();
     sb.auth.signInWithPassword({email,password}).then(({error})=>{ui.loggingIn=false;if(error)ui.loginError=/invalid/i.test(error.message)?'電郵或密碼不正確。':'未能登入，請檢查網絡後再試。';render();if(error){const f2=app.querySelector('[data-form=login]');if(f2)f2.email.value=email}}).catch(()=>{ui.loggingIn=false;ui.loginError='未能登入，請檢查網絡後再試。';render()});return}
   if(a.form==='set'){const kg=parseFloat(fd.get('kg')),reps=parseInt(fd.get('reps'),10);if(!(kg>=0)||!(reps>0)){f.querySelector(!(kg>=0)?'[name=kg]':'[name=reps]').focus();return}
-    const s=clone(S.sessions[a.d]);s.exercises[a.i].sets.push({kg,reps});document.activeElement&&document.activeElement.blur();put('sessions',a.d,s);startRest(90)}
-  else if(a.form==='addex'){const n=String(fd.get('name')).trim();if(!n)return;const s=clone(S.sessions[a.d]);if(s.exercises.some(x=>x.name===n))return;s.exercises.push({name:n,sets:[]});put('sessions',a.d,s);const t=clone(templates());if(!t[s.type].includes(n))t[s.type].push(n);put('config','main',{templates:t})}
+    const s=clone(S.sessions[a.d]),e=s.exercises[a.i];e.sets.push({kg,reps});ui.draft=null;document.activeElement&&document.activeElement.blur();put('sessions',a.d,s);startRest(exCfg(e.name).rest)}
+  else if(a.form==='addex'){const n=String(fd.get('name')).trim();if(!n)return;const s=clone(S.sessions[a.d]);if(s.exercises.some(x=>x.name===n))return;s.exercises.push({name:n,sets:[]});ui.cur=s.exercises.length-1;ui.curFor=a.d;put('sessions',a.d,s);const t=clone(templates());if(!t[s.type].includes(n))t[s.type].push(n);put('config','main',Object.assign({},S.config.main,{templates:t}))}
+  else if(a.form==='excfg'){const num=(k,min)=>{const v=parseInt(fd.get(k),10);return v>=min?v:null};const lo=num('lo',1),hi=num('hi',1),g=parseFloat(fd.get('goal'));
+    const o={sets:num('sets',1)||3,lo:lo||8,hi:Math.max(hi||12,lo||8),rest:num('rest',0)??90,track:TRACK[fd.get('track')]?fd.get('track'):'kg',uni:fd.get('uni')==='on',warm:fd.get('warm')==='on',goal:g>0?g:null};
+    put('config','exercises',Object.assign({},S.config.exercises,{[a.n]:o}))}
+  else if(a.form==='gear'){const l=[...new Set(String(fd.get('list')).split(/[,，、\s]+/).map(Number).filter(x=>x>0))].sort((x,y)=>x-y);if(l.length)put('config','gear',{dumbbells:l})}
   else if(a.form==='task'){const text=String(fd.get('text')).trim();if(!text)return;const d=today();const w=ui.taskWhen;const date=w==='today'?d:w==='off'?nextShift(d,'off'):w==='work'?nextShift(d,'work'):null;const id=uid();put('tasks',id,{id,text,done:false,date,createdAt:new Date().toISOString()})}
   else if(a.form==='project'){const name=String(fd.get('name')).trim();if(!name)return;const id=uid();put('projects',id,{id,name,milestones:[],createdAt:new Date().toISOString()})}
   else if(a.form==='mile'){const text=String(fd.get('text')).trim();if(!text)return;const p=clone(S.projects[a.p]);(p.milestones=p.milestones||[]).push({id:uid(),text,done:false});put('projects',a.p,p)}
