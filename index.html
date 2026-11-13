@@ -107,6 +107,12 @@ nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:
 #rest{max-width:560px;margin:auto;display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 #rest .num{font-size:26px;flex:1}
 #chart svg{width:100%;height:auto;display:block}
+.seg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.seg button{min-height:40px;padding:4px 2px;font:600 15px var(--body)}
+.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.up{color:var(--good)}.down{color:var(--lower)}
+.bwform{display:grid;grid-template-columns:1.3fr 1fr auto;gap:8px;align-items:end}.bwform label{display:grid;gap:2px;min-width:0}
+.exhead{display:flex;align-items:center;gap:8px;width:100%;padding:0;min-height:40px}
+.swap{border-style:dashed;padding:10px}.swap .item button{min-height:38px;padding:4px 10px;font-size:14px}
 @media (prefers-reduced-motion:no-preference){.meter i{transition:width .25s}}
 </style>
 
@@ -133,6 +139,29 @@ const EX_DEF={
   '單臂啞鈴划船':{sets:3,lo:8,hi:12,rest:75,uni:true},'啞鈴二頭彎舉':{sets:3,lo:10,hi:15,rest:60},'啞鈴過頭三頭伸展':{sets:3,lo:10,hi:15,rest:60},
   '高腳杯深蹲':{sets:4,lo:8,hi:12,rest:90},'啞鈴羅馬尼亞硬拉':{sets:3,lo:8,hi:12,rest:90},'保加利亞分腿蹲':{sets:3,lo:8,hi:12,rest:75,uni:true},
   '啞鈴臀橋':{sets:3,lo:10,hi:15,rest:60},'單腳提踵':{sets:3,lo:12,hi:20,rest:45,uni:true},'平板支撐（秒）':{sets:3,lo:30,hi:60,rest:60,track:'time'}};
+/* extra dumbbell exercises offered by 換動作 */
+Object.assign(EX_DEF,{
+  '平板啞鈴臥推':{sets:3,lo:8,hi:12,rest:90},'地板啞鈴臥推':{sets:3,lo:8,hi:12,rest:90},'啞鈴飛鳥':{sets:3,lo:10,hi:15,rest:60},
+  '俯身啞鈴划船':{sets:3,lo:8,hi:12,rest:90},'啞鈴直臂後拉':{sets:3,lo:10,hi:15,rest:60},
+  '站姿啞鈴肩推':{sets:3,lo:8,hi:12,rest:90},'阿諾推舉':{sets:3,lo:8,hi:12,rest:90},'啞鈴側平舉':{sets:3,lo:12,hi:15,rest:60},'俯身啞鈴反向飛鳥':{sets:3,lo:12,hi:15,rest:60},
+  '錘式彎舉':{sets:3,lo:10,hi:15,rest:60},'上斜啞鈴彎舉':{sets:3,lo:10,hi:15,rest:60},
+  '啞鈴三頭後伸':{sets:3,lo:10,hi:15,rest:60,uni:true},'仰臥啞鈴三頭伸展':{sets:3,lo:10,hi:15,rest:60},
+  '啞鈴深蹲':{sets:4,lo:8,hi:12,rest:90},'啞鈴相撲深蹲':{sets:3,lo:8,hi:12,rest:90},'啞鈴弓步':{sets:3,lo:8,hi:12,rest:75,uni:true},'啞鈴登階':{sets:3,lo:8,hi:12,rest:75,uni:true},
+  '單腳啞鈴羅馬尼亞硬拉':{sets:3,lo:8,hi:12,rest:75,uni:true},'啞鈴硬拉':{sets:3,lo:8,hi:12,rest:90},
+  '單腳臀橋':{sets:3,lo:10,hi:15,rest:60,uni:true},'雙腳啞鈴提踵':{sets:3,lo:12,hi:20,rest:45},
+  '側平板支撐（秒）':{sets:3,lo:20,hi:45,rest:45,track:'time',uni:true},'死蟲式':{sets:3,lo:8,hi:12,rest:45,track:'reps',uni:true}});
+const ALT=[
+  ['上斜啞鈴臥推','平板啞鈴臥推','地板啞鈴臥推','啞鈴飛鳥'],
+  ['胸托啞鈴划船','單臂啞鈴划船','俯身啞鈴划船','啞鈴直臂後拉'],
+  ['坐姿啞鈴肩推','站姿啞鈴肩推','阿諾推舉','啞鈴側平舉','俯身啞鈴反向飛鳥'],
+  ['啞鈴二頭彎舉','錘式彎舉','上斜啞鈴彎舉'],
+  ['啞鈴過頭三頭伸展','啞鈴三頭後伸','仰臥啞鈴三頭伸展'],
+  ['高腳杯深蹲','啞鈴深蹲','啞鈴相撲深蹲'],
+  ['啞鈴羅馬尼亞硬拉','單腳啞鈴羅馬尼亞硬拉','啞鈴硬拉'],
+  ['保加利亞分腿蹲','啞鈴弓步','啞鈴登階'],
+  ['啞鈴臀橋','單腳臀橋'],
+  ['單腳提踵','雙腳啞鈴提踵'],
+  ['平板支撐（秒）','側平板支撐（秒）','死蟲式']];
 const TRACK={kg:'重量 × 次數',reps:'只計次數',time:'計時（秒）'};
 const ls={get:(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 const COLLS=['sessions','tasks','projects','overrides','config'];
@@ -314,17 +343,90 @@ const fmtSet=(z,c)=>c.track==='kg'?`${z.kg} kg × ${z.reps}`:`${z.reps}${unit(c)
 const setsText=sets=>sets.map(s=>s.kg>0?`${s.kg}×${s.reps}`:`${s.reps}`).join('、');
 const dur=ms=>{const t=Math.max(0,Math.floor(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t/60)%60,s=t%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')};
 function stats(s){let vol=0,reps=0,sets=0,exs=0;(s.exercises||[]).forEach(e=>{const c=exCfg(e.name);if(e.sets.length)exs++;e.sets.forEach(z=>{sets++;if(c.track!=='time')reps+=z.reps;vol+=(z.kg||0)*z.reps})});return{vol,reps,sets,exs}}
-function exHistory(name){return Object.values(S.sessions).sort((a,b)=>a.date<b.date?-1:1).map(s=>{const e=(s.exercises||[]).find(x=>x.name===name);return e&&e.sets&&e.sets.length?{date:s.date,kg:Math.max(...e.sets.map(z=>z.kg||0))}:null}).filter(x=>x&&x.kg>0)}
-function chart(name,goal){const h=exHistory(name);if(!h.length)return '<p class="empty">這個動作還沒有重量紀錄。</p>';
-  const W=320,H=130,L=34,R=12,T=14,B=24,ks=h.map(x=>x.kg).concat(goal>0?[goal]:[]),mn=Math.min(...ks),mx=Math.max(...ks),span=mx-mn||1;
-  const X=i=>h.length===1?(L+W-R)/2:L+i*(W-L-R)/(h.length-1),Y=k=>T+(mx-k)/span*(H-T-B);
-  const pts=h.map((x,i)=>`${X(i).toFixed(1)},${Y(x.kg).toFixed(1)}`).join(' ');const e=h[h.length-1];
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(name)}最高重量，最新 ${e.kg} 公斤${goal>0?'，目標 '+goal+' 公斤':''}">
-  <line x1="${L}" x2="${W-R}" y1="${Y(mx)}" y2="${Y(mx)}" stroke="var(--line)"/><line x1="${L}" x2="${W-R}" y1="${Y(mn)}" y2="${Y(mn)}" stroke="var(--line)"/>
-  <text x="${L-5}" y="${Y(mx)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${mx}</text>${mx!==mn?`<text x="${L-5}" y="${Y(mn)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${mn}</text>`:''}
-  ${goal>0?`<line x1="${L}" x2="${W-R}" y1="${Y(goal)}" y2="${Y(goal)}" stroke="var(--warn)" stroke-dasharray="5 4"/><text x="${W-R}" y="${Y(goal)-4}" text-anchor="end" font-size="12" fill="var(--warn)">目標 ${goal}</text>`:''}
-  <polyline points="${pts}" fill="none" stroke="var(--upper)" stroke-width="2"/><circle cx="${X(h.length-1)}" cy="${Y(e.kg)}" r="4" fill="var(--upper)"/>
-  <text x="${L}" y="${H-6}" font-size="12" fill="var(--muted)">${short(h[0].date)}</text><text x="${W-R}" y="${H-6}" text-anchor="end" font-size="12" fill="var(--muted)">${short(e.date)}</text></svg>`}
+/* one point per session for an exercise: heaviest dumbbell, best est. 1RM, best reps/seconds */
+function exSeries(name){return Object.values(S.sessions).sort((a,b)=>a.date<b.date?-1:1).map(s=>{const e=(s.exercises||[]).find(x=>x.name===name);if(!e||!e.sets||!e.sets.length)return null;
+  return{date:s.date,kg:Math.max(...e.sets.map(z=>z.kg||0)),e1:Math.max(...e.sets.map(e1rm)),reps:Math.max(...e.sets.map(z=>z.reps||0)),sets:e.sets}}).filter(Boolean)}
+function exHistory(name){return exSeries(name).filter(x=>x.kg>0)}
+const r1=v=>Math.round(v*10)/10;
+/* line chart, x by date so gaps between sessions show as gaps */
+function lineSvg(pts,o={}){if(!pts.length)return `<p class="empty">${esc(o.empty||'未有紀錄。')}</p>`;
+  const W=320,H=o.h||130,L=38,R=12,T=14,B=24,col=o.color||'var(--upper)',u=o.unit||'';
+  const vs=pts.map(x=>x.v).concat(o.goal>0?[o.goal]:[]);let mn=Math.min(...vs),mx=Math.max(...vs);if(mx===mn){mx+=.5;mn-=.5}
+  const d0=toN(pts[0].date),d1=toN(pts[pts.length-1].date);
+  const X=d=>d1===d0?(L+W-R)/2:L+(toN(d)-d0)*(W-L-R)/(d1-d0),Y=v=>T+(mx-v)/(mx-mn)*(H-T-B);
+  const line=pts.map(x=>`${X(x.date).toFixed(1)},${Y(x.v).toFixed(1)}`).join(' '),e=pts[pts.length-1];
+  const lo=Math.min(...pts.map(x=>x.v)),hi=Math.max(...pts.map(x=>x.v));
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label||'')}，最新 ${r1(e.v)}${u}${o.goal>0?'，目標 '+o.goal+u:''}">
+  <line x1="${L}" x2="${W-R}" y1="${Y(hi)}" y2="${Y(hi)}" stroke="var(--line)"/><line x1="${L}" x2="${W-R}" y1="${Y(lo)}" y2="${Y(lo)}" stroke="var(--line)"/>
+  <text x="${L-5}" y="${Y(hi)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${r1(hi)}</text>${hi!==lo?`<text x="${L-5}" y="${Y(lo)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${r1(lo)}</text>`:''}
+  ${o.goal>0?`<line x1="${L}" x2="${W-R}" y1="${Y(o.goal)}" y2="${Y(o.goal)}" stroke="var(--warn)" stroke-dasharray="5 4"/><text x="${W-R}" y="${Y(o.goal)-4}" text-anchor="end" font-size="12" fill="var(--warn)">目標 ${o.goal}</text>`:''}
+  <polyline points="${line}" fill="none" stroke="${col}" stroke-width="2"/>${pts.length<=40?pts.map(x=>`<circle cx="${X(x.date).toFixed(1)}" cy="${Y(x.v).toFixed(1)}" r="${x===e?4:2.5}" fill="${col}"/>`).join(''):`<circle cx="${X(e.date)}" cy="${Y(e.v)}" r="4" fill="${col}"/>`}
+  <text x="${L}" y="${H-6}" font-size="12" fill="var(--muted)">${short(pts[0].date)}</text>${pts.length>1?`<text x="${W-R}" y="${H-6}" text-anchor="end" font-size="12" fill="var(--muted)">${short(e.date)}</text>`:''}</svg>`}
+function chart(name,goal,from){const h=exHistory(name).filter(x=>!from||x.date>=from);return lineSvg(h.map(x=>({date:x.date,v:x.kg})),{goal,unit:' 公斤',label:name+'最高重量',empty:from?'呢段期間未有重量紀錄。':'這個動作還沒有重量紀錄。'})}
+function barSvg(bk,o={}){const W=320,H=120,L=8,R=8,T=16,B=22,mx=Math.max(1,...bk.map(x=>x.v)),n=bk.length,bw=(W-L-R)/n;
+  if(!bk.some(x=>x.v>0))return `<p class="empty">${esc(o.empty||'未有紀錄。')}</p>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label||'')}">
+  <line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>
+  ${bk.map((x,i)=>{const h=x.v/mx*(H-T-B);return x.v>0?`<rect x="${(L+i*bw+bw*.15).toFixed(1)}" y="${(H-B-h).toFixed(1)}" width="${Math.max(1,bw*.7).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${x.cur?'var(--good)':'var(--upper)'}"><title>${esc(x.label)}：${Math.round(x.v).toLocaleString()}</title></rect>`:''}).join('')}
+  <text x="${L}" y="${T-4}" font-size="12" fill="var(--muted)">最高 ${Math.round(mx).toLocaleString()} ${esc(o.unit||'')}</text>
+  <text x="${L}" y="${H-6}" font-size="12" fill="var(--muted)">${esc(bk[0].label)}</text><text x="${W-R}" y="${H-6}" text-anchor="end" font-size="12" fill="var(--muted)">${esc(bk[n-1].label)}</text></svg>`}
+
+/* ---------- 進度 ---------- */
+const RANGES=[['7','7 日'],['30','30 日'],['182','6 個月'],['365','12 個月'],['all','全部']];
+const body=()=>(S.config.body&&S.config.body.entries)||{};
+function rangeStart(r){if(r!=='all')return add(today(),-(+r-1));
+  const ds=Object.keys(S.sessions).concat(Object.keys(body()),[ANCHOR]).sort();return ds[0]}
+const mondayOf=d=>add(d,-((wd(d)+6)%7));
+function periodStats(from,to){const ss=Object.values(S.sessions).filter(s=>s.done&&s.date>=from&&s.date<=to);let vol=0,sets=0,ms=0;
+  ss.forEach(s=>{const st=stats(s);vol+=st.vol;sets+=st.sets;if(s.finishedAt&&s.startedAt){const m=Date.parse(s.finishedAt)-Date.parse(s.startedAt);if(m>0&&m<6*3600e3)ms+=m}});
+  let planned=0;for(let d=from>ANCHOR?from:ANCHOR;d<=to;d=add(d,1))if(plan(d).train!=='N')planned++;
+  return{n:ss.length,vol,sets,ms,planned,list:ss}}
+const delta=(a,b)=>!(b>0)?'':`<span class="small ${a>=b?'up':'down'}">${a>=b?'▲':'▼'} ${Math.abs(Math.round((a-b)/b*100))}%</span>`;
+function exGroup(n){const t=templates();return t.U.includes(n)?'U':t.L.includes(n)?'L':''}
+function exCard(n,from){const c=exCfg(n),all=exSeries(n),inR=all.filter(x=>x.date>=from),last=all[all.length-1],open=ui.openEx===n;
+  let main;
+  if(c.track==='kg'){const mx=Math.max(...all.map(x=>x.kg)),e1=Math.max(...all.map(x=>x.e1)),g=goalFor(n);
+    const ch=inR.length>1?r1(inR[inR.length-1].kg-inR[0].kg):null;
+    main=`<div class="stats"><div><span class="small muted">最高</span><span class="num">${mx} kg</span></div><div><span class="small muted">估計 1RM</span><span class="num">${r1(e1)} kg</span></div><div><span class="small muted">目標</span><span class="num">${g?g+' kg':'—'}</span></div></div>
+    ${g?`<div class="meter" role="img" aria-label="達成目標 ${Math.min(100,Math.round(mx/g*100))}%"><i style="width:${Math.min(100,Math.round(mx/g*100))}%"></i></div>`:''}
+    ${ch!==null?`<p class="small muted">呢段期間 <span class="num ${ch>0?'up':ch<0?'down':''}">${ch>0?'+':''}${ch} kg</span></p>`:''}`}
+  else{const best=Math.max(...all.map(x=>x.reps));main=`<div class="stats"><div><span class="small muted">最好</span><span class="num">${best}${unit(c)}</span></div><div><span class="small muted">次數</span><span class="num">${all.length}</span></div><div><span class="small muted">最近</span><span class="num">${last.reps}${unit(c)}</span></div></div>`}
+  const detail=open?`<div class="mini">${c.track==='kg'?chart(n,goalFor(n),from):lineSvg(inR.map(x=>({date:x.date,v:x.reps})),{unit:unit(c),label:n+'最好成績',color:'var(--good)',empty:'呢段期間未有紀錄。'})}</div>
+    <div class="list">${all.slice(-8).reverse().map(x=>`<div class="item"><span class="num">${short(x.date)}</span><span class="small muted num grow" style="text-align:right">${setsText(x.sets)}</span></div>`).join('')}</div>`:'';
+  return `<article class="panel ex ${exGroup(n)}"><button class="quiet exhead" data-act="openex" data-n="${esc(n)}" aria-expanded="${open}"><span class="grow" style="text-align:left;color:var(--ink);font-weight:700">${esc(n)}</span><span class="small muted">${inR.length} 次 · ${short(last.date)} ${open?'▲':'▼'}</span></button>${main}${detail}</article>`}
+function viewProgress(){
+  const r=ui.range||'30',from=rangeStart(r),to=today(),ps=periodStats(from,to),days=toN(to)-toN(from)+1;
+  const prev=r==='all'?null:periodStats(add(from,-days),add(from,-1));
+  const chips=RANGES.map(x=>`<button class="${r===x[0]?'on':''}" data-act="range" data-v="${x[0]}">${x[1]}</button>`).join('');
+  /* daily bars up to 30 days, weekly beyond */
+  let bk=[];if(days<=31){for(let d=from;d<=to;d=add(d,1)){const s=S.sessions[d];bk.push({label:short(d),v:s&&s.done?stats(s).vol:0,cur:d===to})}}
+  else{const w0=mondayOf(from),cw=mondayOf(to);for(let w=w0;w<=to;w=add(w,7)){const v=ps.list.filter(s=>s.date>=w&&s.date<add(w,7)).reduce((a,s)=>a+stats(s).vol,0);bk.push({label:short(w),v,cur:w===cw})}}
+  const B=body(),bdates=Object.keys(B).sort(),bIn=bdates.filter(d=>d>=from),bl=bdates[bdates.length-1];
+  const bch=bIn.length>1?r1(B[bIn[bIn.length-1]]-B[bIn[0]]):null;
+  const names=[...new Set(Object.values(S.sessions).flatMap(x=>(x.exercises||[]).filter(e=>e.sets&&e.sets.length).map(e=>e.name)))];
+  const lastDate=n=>{const a=exSeries(n);return a[a.length-1].date};
+  names.sort((a,b)=>lastDate(a)<lastDate(b)?1:-1);
+  return `<div class="chips seg">${chips}</div>
+  <section class="panel"><div class="stats four">
+   <div><span class="small muted">訓練</span><span class="num">${ps.n}<span class="small muted"> / ${ps.planned}</span></span>${prev?delta(ps.n,prev.n):''}</div>
+   <div><span class="small muted">總重量</span><span class="num">${Math.round(ps.vol).toLocaleString()}</span>${prev?delta(ps.vol,prev.vol):''}</div>
+   <div><span class="small muted">組數</span><span class="num">${ps.sets}</span>${prev?delta(ps.sets,prev.sets):''}</div>
+   <div><span class="small muted">時:分</span><span class="num">${ps.ms?Math.floor(ps.ms/36e5)+':'+String(Math.floor(ps.ms/6e4)%60).padStart(2,'0'):'—'}</span></div></div>
+   <p class="small muted">訓練 = 完成 / 排咗。${prev?'箭咀同上一段一樣長嘅期間比較。':''}總重量 = 公斤 × 次數（一隻啞鈴）。</p>
+   <div class="mini">${barSvg(bk,{unit:'kg',label:(days<=31?'每日':'每週')+'總重量',empty:'呢段期間未有完成嘅訓練。'})}</div>
+   <p class="small muted">${days<=31?'每日':'每週'}總重量${days<=31?'':'（以星期一計）'}</p></section>
+  <section><div class="head"><h2>體重</h2>${bl?`<span class="num" style="font-size:20px">${B[bl]} kg${bch!==null?` <span class="small ${bch<=0?'muted':'muted'}">${bch>0?'+':''}${bch}</span>`:''}</span>`:''}</div>
+  <div class="panel"><form class="bwform" data-form="bw"><label class="small muted">日期<input type="date" name="date" value="${to}" max="${to}"></label><label class="small muted">公斤<input name="kg" inputmode="decimal" placeholder="${bl?B[bl]:'例如 70.5'}" autocomplete="off"></label><button class="primary" type="submit">記錄</button></form>
+  <div class="mini">${lineSvg(bIn.map(d=>({date:d,v:B[d]})),{unit:' 公斤',label:'體重',color:'var(--good)',empty:'記錄第一次體重之後，圖表會喺呢度出現。'})}</div>
+  ${bdates.length?`<details><summary class="small">最近紀錄</summary><div class="list">${bdates.slice(-10).reverse().map(d=>`<div class="item"><span class="num grow">${short(d)}（${WD[wd(d)]}）</span><span class="num">${B[d]} kg</span><button class="quiet" data-act="delbw" data-d="${d}" aria-label="刪除 ${short(d)} 體重">×</button></div>`).join('')}</div></details>`:''}</div></section>
+  <section><h2>每個動作</h2>${names.length?names.map(n=>exCard(n,from)).join(''):'<p class="empty">完成第一次訓練之後，每個動作嘅進度會喺呢度出現。</p>'}</section>`}
+function viewSwap(d,i,e){const g=ALT.find(x=>x.includes(e.name)),s=S.sessions[d],used=new Set(s.exercises.map(x=>x.name));
+  const opts=(g||[]).filter(n=>n!==e.name);
+  const btn=n=>`<div class="item"><span class="grow">${esc(n)}${used.has(n)?' <span class="small muted">（今次已有）</span>':''}</span><button data-act="swapto" data-i="${i}" data-d="${d}" data-n="${esc(n)}" data-scope="once" ${used.has(n)?'disabled':''}>今次</button><button data-act="swapto" data-i="${i}" data-d="${d}" data-n="${esc(n)}" data-scope="tpl" ${used.has(n)?'disabled':''}>以後都用</button></div>`;
+  return `<div class="panel swap"><div class="head"><h3 style="font-size:16px">換走「${esc(e.name)}」</h3><button class="quiet" data-act="swap" data-i="-1">取消</button></div>
+  ${opts.length?`<div class="list">${opts.map(btn).join('')}</div>`:'<p class="small muted">呢個動作未有預設替代，可以自己輸入。</p>'}
+  <form class="row" data-form="swapcustom" data-i="${i}" data-d="${d}"><input class="grow" name="name" placeholder="其他動作名稱" aria-label="其他動作名稱"><button type="submit">今次換</button></form>
+  <p class="small muted">「今次」只改今日；「以後都用」連${TNAME[s.type]}範本一齊改。</p></div>`}
 const sugText=(sg,c)=>c.track==='kg'?(sg.kg>0?`${sg.kg} kg × ${c.lo}–${c.hi}`:`${c.lo}–${c.hi} 下，重量自己揀`):`${sg.reps}${unit(c)}`;
 
 function viewTrainStart(d,p){
@@ -359,6 +461,7 @@ function viewFocus(d,s){
   <div class="stats panel"><div><span class="small muted">時間</span><span class="num" data-elapsed="${esc(s.startedAt||'')}">${dur(Date.now()-Date.parse(s.startedAt||Date()))}</span></div><div><span class="small muted">總重量</span><span class="num">${Math.round(st.vol).toLocaleString()} kg</span></div><div><span class="small muted">組數</span><span class="num">${st.sets}</span></div></div>
   <div class="exnav">${nav}</div>
   <article class="panel ex ${s.type}"><div class="head"><h3>${esc(e.name)}</h3><span class="small muted num">${c.sets} 組 · ${c.track==='kg'?c.lo+'–'+c.hi+' 下':c.lo+'–'+c.hi+unit(c)} · 休息 ${c.rest} 秒</span></div>
+  ${!k?(ui.swap===i&&ui.swapFor===d?viewSwap(d,i,e):`<button class="quiet small" style="justify-self:start;padding-inline:0" data-act="swap" data-i="${i}" data-d="${d}">⇄ 換動作</button>`):''}
   ${c.uni?'<p class="small muted">重量係一隻啞鈴，次數係一邊。</p>':''}
   <p class="small muted">${prev?`上次 ${short(prev.date)}：<span class="num">${setsText(prev.ex.sets)}</span>`:'第一次做'}</p>
   <p class="why">${esc(sg.why)}</p>
@@ -384,13 +487,12 @@ function viewSummary(d,s){const st=stats(s),ms=s.finishedAt&&s.startedAt?Date.pa
   <div class="list">${s.exercises.filter(e=>e.sets.length).map(e=>`<div class="item"><span class="grow">${esc(e.name)}</span><span class="small muted num">${setsText(e.sets)}</span></div>`).join('')}</div></section>`}
 
 function viewTrain(){
+  const seg=`<div class="row tview"><button class="grow ${ui.tview!=='progress'?'on':''}" data-act="tview" data-v="log">今次訓練</button><button class="grow ${ui.tview==='progress'?'on':''}" data-act="tview" data-v="progress">進度</button></div>`;
+  if(ui.tview==='progress')return `<header><h1>訓練</h1></header>${seg}${viewProgress()}`;
   const d=ui.trainDate||today(),p=plan(d),s=S.sessions[d];
   const main=!s?viewTrainStart(d,p):s.done?viewSummary(d,s):viewFocus(d,s);
-  const names=[...new Set([...templates().U,...templates().L,...Object.values(S.sessions).flatMap(x=>(x.exercises||[]).map(e=>e.name))])].filter(n=>exCfg(n).track==='kg');
-  const ex=ui.exercise&&names.includes(ui.exercise)?ui.exercise:names[0];
   const hist=Object.values(S.sessions).filter(x=>x.done).sort((a,b)=>a.date<b.date?1:-1).slice(0,12);
-  return `<header><h1>訓練</h1></header>${main}
-  <section><div class="head"><h2>最高重量</h2><span class="small muted">公斤</span></div><select id="exsel" data-change="exercise" aria-label="選擇動作">${names.map(n=>`<option ${n===ex?'selected':''}>${esc(n)}</option>`).join('')}</select><div id="chart">${chart(ex,goalFor(ex))}</div></section>
+  return `<header><h1>訓練</h1></header>${seg}${main}
   <section><h2>紀錄</h2>${hist.length?`<div class="panel list">${hist.map(x=>{const st=stats(x);return `<div class="item"><button class="quiet grow" style="text-align:left;color:var(--ink)" data-act="opensession" data-d="${x.date}"><span class="num">${short(x.date)}</span> ${TNAME[x.type]}</button><span class="small muted num">${st.sets} 組 · ${Math.round(st.vol).toLocaleString()} kg</span></div>`}).join('')}</div>`:'<p class="empty">完成第一次訓練後，紀錄會出現在這裡。</p>'}</section>`;
 }
 
@@ -458,6 +560,10 @@ function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)
 function postpone(d){const p=plan(d);for(let i=1;i<=14;i++){const x=add(d,i);if(plan(x).train==='N'&&!isDone(x)){
     put('overrides',d,Object.assign({},S.overrides[d],{train:'N'}));put('overrides',x,Object.assign({},S.overrides[x],{train:p.train}));ui.sel=x;ui.flash=x;return}}}
 function clone(o){return JSON.parse(JSON.stringify(o))}
+/* swap only before the first set, so logged sets never change name */
+function swapEx(d,i,n,tpl){const s=clone(S.sessions[d]),old=s.exercises[i]&&s.exercises[i].name;if(!old||s.exercises[i].sets.length||s.exercises.some(x=>x.name===n))return;
+  s.exercises[i]={name:n,sets:[]};ui.swap=null;ui.draft=null;ui.cur=i;ui.curFor=d;put('sessions',d,s);
+  if(tpl){const t=clone(templates()),l=t[s.type];const j=l.indexOf(old);if(l.includes(n))t[s.type]=l.filter(x=>x!==old);else if(j>=0)l[j]=n;else l.push(n);put('config','main',Object.assign({},S.config.main,{templates:t}))}}
 function startSession(d,t){put('sessions',d,{date:d,type:t,done:false,startedAt:new Date().toISOString(),exercises:templates()[t].map(n=>({name:n,sets:[]}))})}
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset,act=a.act;
@@ -484,6 +590,12 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
   else if(act==='rmex'){const s=clone(S.sessions[a.d]);const n=s.exercises[a.i].name;s.exercises.splice(a.i,1);ui.cur=Math.max(0,a.i-1);put('sessions',a.d,s);const t=clone(templates());t[s.type]=t[s.type].filter(x=>x!==n);put('config','main',Object.assign({},S.config.main,{templates:t}))}
   else if(act==='restadj'){rest.end+=(+a.s)*1000;ls.set('rota-rest',rest.end);tickRest()}
   else if(act==='reststop')stopRest();
+  else if(act==='tview'){ui.tview=a.v;render();scrollTo(0,0)}
+  else if(act==='range'){ui.range=a.v;render()}
+  else if(act==='openex'){ui.openEx=ui.openEx===a.n?null:a.n;render()}
+  else if(act==='delbw'){if(ui.confirm==='bw'+a.d){ui.confirm=null;const e=Object.assign({},body());delete e[a.d];put('config','body',{entries:e})}else{ui.confirm='bw'+a.d;b.textContent='確認？'}}
+  else if(act==='swap'){ui.swap=+a.i;ui.swapFor=a.d;render()}
+  else if(act==='swapto')swapEx(a.d,+a.i,a.n,a.scope==='tpl');
   else if(act==='when'){ui.taskWhen=a.v;const tx=document.getElementById('tasktext');const v=tx?tx.value:'';render();const n=document.getElementById('tasktext');if(n)n.value=v}
   else if(act==='deltask')del('tasks',a.id);
   else if(act==='delmile'){const p=clone(S.projects[a.p]);p.milestones=p.milestones.filter(m=>m.id!==a.m);put('projects',a.p,p)}
@@ -506,6 +618,9 @@ document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,a=f.d
   else if(a.form==='excfg'){const num=(k,min)=>{const v=parseInt(fd.get(k),10);return v>=min?v:null};const lo=num('lo',1),hi=num('hi',1),g=parseFloat(fd.get('goal'));
     const o={sets:num('sets',1)||3,lo:lo||8,hi:Math.max(hi||12,lo||8),rest:num('rest',0)??90,track:TRACK[fd.get('track')]?fd.get('track'):'kg',uni:fd.get('uni')==='on',warm:fd.get('warm')==='on',goal:g>0?g:null};
     put('config','exercises',Object.assign({},S.config.exercises,{[a.n]:o}))}
+  else if(a.form==='bw'){const kg=parseFloat(String(fd.get('kg')).replace(',','.')),d=String(fd.get('date'))||today();if(!(kg>20&&kg<400)||!/^\d{4}-\d\d-\d\d$/.test(d)||d>today()){f.elements.kg.focus();return}
+    document.activeElement&&document.activeElement.blur();put('config','body',{entries:Object.assign({},body(),{[d]:r1(kg)})})}
+  else if(a.form==='swapcustom'){const n=String(fd.get('name')).trim();if(n)swapEx(a.d,+a.i,n,false)}
   else if(a.form==='gear'){const l=[...new Set(String(fd.get('list')).split(/[,，、\s]+/).map(Number).filter(x=>x>0))].sort((x,y)=>x-y);if(l.length)put('config','gear',{dumbbells:l})}
   else if(a.form==='task'){const text=String(fd.get('text')).trim();if(!text)return;const d=today();const w=ui.taskWhen;const date=w==='today'?d:w==='off'?nextShift(d,'off'):w==='work'?nextShift(d,'work'):null;const id=uid();put('tasks',id,{id,text,done:false,date,createdAt:new Date().toISOString()})}
   else if(a.form==='project'){const name=String(fd.get('name')).trim();if(!name)return;const id=uid();put('projects',id,{id,name,milestones:[],createdAt:new Date().toISOString()})}
